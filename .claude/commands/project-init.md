@@ -4,6 +4,9 @@
 
 ## Step
 
-- CLAUDE.md の `## Project Goal` をユーザーの指示によって更新
-- README.md をプロジェクトのゴールに合わせて修正
-- package.json の name と description を更新
+- npm のパッケージ名と主要な API 例をユーザーに提案
+- 確認が取れたら
+  - CLAUDE.md の `## Project Goal` を更新
+  - README.md を修正
+  - package.json の name と description を更新
+  - @your/pkgname を置換

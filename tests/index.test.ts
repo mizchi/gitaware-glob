@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { add } from "../dist/index.js";
+// Should rename this to match your package name
+import { add } from "@your/pkgname"; // Importing from the package
 
 describe("add function", () => {
   it("should return the sum of two numbers", () => {

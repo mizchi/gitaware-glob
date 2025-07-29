@@ -1,5 +1,5 @@
 {
-  "name": "cc-smoke-review-starter",
+  "name": "@your/pkgname",
   "version": "0.0.1",
   "description": "WIP",
   "type": "module",
@@ -28,5 +28,9 @@
     "typescript": "^5.8.3",
     "vitest": "^3.2.4",
     "zx": "^8.7.1"
-  }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ]
 }
