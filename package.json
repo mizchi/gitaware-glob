@@ -1,0 +1,32 @@
+{
+  "name": "cc-smoke-review-starter",
+  "version": "0.0.1",
+  "description": "WIP",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "ai:prereview": ".claude/scripts/check-prereview.mjs",
+    "build": "tsdown",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "license": "MIT",
+  "packageManager": "pnpm@10.12.1",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.2.4",
+    "knip": "^5.62.0",
+    "oxlint": "^1.9.0",
+    "rolldown-plugin-dts": "^0.14.1",
+    "tsdown": "^0.13.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4",
+    "zx": "^8.7.1"
+  }
+}
