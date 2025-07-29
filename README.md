@@ -3,7 +3,7 @@
 ## How to use
 
 ```bash
-$  git clone https://github.com/mizchi/ts-starter-with-smoke-review myproj
+$  git clone https://github.com/mizchi/ts-lib-starter-20250729 myproj
 $ cd myproj
 
 # first
