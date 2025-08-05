@@ -1,10 +1,13 @@
 import { readFile, access, glob as fsGlob } from "node:fs/promises";
 import { join, dirname, isAbsolute, relative } from "node:path";
 import { gitignoreToGlob } from "./gitignore-to-glob.js";
-import { optimizeGitignorePatterns, checkNegationPatterns } from "./optimize-patterns.js";
 import { findGitignoreRecursive } from "./find-gitignore-recursive.js";
-import { matchesPattern } from "./pattern-utils.js";
 import { GlobOptions } from "./types.js";
+import { preprocessPatterns } from "./preprocess.js";
+import { filterByGitignore } from "./postprocess.js";
+
+// Re-export check-ignore functionality
+export { checkGitignoreReason, formatGitignoreReason, type GitignoreReason } from "./check-ignore.js";
 
 /**
  * Find all .gitignore files from the given directory up to the root
@@ -148,31 +151,20 @@ export async function glob(
   // Collect all patterns from .gitignore files
   const allPatterns = await collectGitignorePatterns(relevantGitignoreFiles, absoluteCwd);
   
-  // Optimize patterns for glob
-  const { exclude, negations } = optimizeGitignorePatterns(allPatterns);
+  // Preprocess patterns
+  const { earlyExclude, postprocessPatterns } = preprocessPatterns(allPatterns);
   
-  
-  // Get all files without exclusions
+  // Get all files - use early exclusions for optimization
   const allFiles: string[] = [];
   for await (const file of fsGlob(pattern, {
     cwd: absoluteCwd,
-    exclude: ['**/.git/**'], // Only exclude .git directory initially
+    exclude: ['**/.git/**', ...earlyExclude], // Apply early exclusions
   })) {
     allFiles.push(file);
   }
   
-  // Filter files based on gitignore patterns
-  const files = allFiles.filter(file => {
-    // Check if file matches any exclude pattern
-    const isExcluded = exclude.some(exc => matchesPattern(file, exc));
-    
-    // If excluded, check negation patterns
-    if (isExcluded && negations.length > 0) {
-      return checkNegationPatterns(file, negations);
-    }
-    
-    return !isExcluded;
-  });
+  // Postprocess: filter files based on all gitignore patterns including negations
+  const files = filterByGitignore(allFiles, postprocessPatterns);
   
   return files;
 }

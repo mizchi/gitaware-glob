@@ -2,44 +2,22 @@
  * Common utilities for pattern matching and conversion
  */
 
-/**
- * Convert a gitignore pattern to a regular expression
- * @param pattern The pattern to convert
- * @returns A regular expression string
- */
-export function patternToRegex(pattern: string): string {
-  let regexStr = pattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
-  
-  // Use placeholders to avoid conflicts during replacement
-  regexStr = regexStr.replace(/\*\*\//g, '__STARSTAR_SLASH__');
-  regexStr = regexStr.replace(/\/\*\*/g, '__SLASH_STARSTAR__');
-  regexStr = regexStr.replace(/\*\*/g, '__STARSTAR__');
-  regexStr = regexStr.replace(/\*/g, '__STAR__');
-  regexStr = regexStr.replace(/\?/g, '__QUESTION__');
-  
-  // Replace placeholders with regex patterns
-  regexStr = regexStr.replace(/__STARSTAR_SLASH__/g, '(.*/)?');  // **/ = optional path prefix
-  regexStr = regexStr.replace(/__SLASH_STARSTAR__/g, '/.*');     // /** = match everything after
-  regexStr = regexStr.replace(/__STARSTAR__/g, '.*');              // ** = match anything
-  regexStr = regexStr.replace(/__STAR__/g, '[^/]*');               // * = match anything except /
-  regexStr = regexStr.replace(/__QUESTION__/g, '[^/]');            // ? = match single char except /
-  
-  return regexStr;
-}
+import { minimatch } from "minimatch";
 
 /**
- * Check if a path matches a pattern
+ * Check if a path matches a pattern using minimatch
  * @param path The path to test
  * @param pattern The pattern to match against
  * @returns True if the path matches the pattern
  */
 export function matchesPattern(path: string, pattern: string): boolean {
-  if (pattern.includes("**") || pattern.includes("*") || pattern.includes("?")) {
-    const regex = patternToRegex(pattern);
-    return new RegExp("^" + regex + "$").test(path);
+  // For patterns without wildcards, check exact match or directory prefix
+  if (!pattern.includes("*") && !pattern.includes("?") && !pattern.includes("[")) {
+    return path === pattern || path.startsWith(pattern + "/");
   }
-  // Literal pattern - check exact match or directory prefix
-  return path === pattern || path.startsWith(pattern + "/");
+  
+  // Use minimatch for wildcard patterns
+  return minimatch(path, pattern, { dot: true });
 }
 
 /**
