@@ -3,8 +3,7 @@
  */
 import { glob as fsGlob } from "node:fs/promises";
 import { Dirent } from "node:fs";
-import { relative } from "node:path";
-import { toAbsolutePath } from "./path-utils.js";
+import { relative, isAbsolute, join } from "node:path";
 import { GlobOptions } from "./types.js";
 import { preprocessPatterns } from "./preprocess.js";
 import { filterByGitignore } from "./postprocess.js";
@@ -24,7 +23,7 @@ async function collectGlobEntries(
   
   for await (const entry of fsGlob(pattern, {
     cwd: absoluteCwd,
-    exclude: ['**/.git/**', ...(earlyExclude || [])],
+    exclude: ['**/.git/**', ...earlyExclude],
     withFileTypes,
   })) {
     if (withFileTypes) {
@@ -57,17 +56,21 @@ export async function* glob(
   options?: GlobOptions
 ): AsyncGenerator<string | Dirent, void, unknown> {
   const cwd = options?.cwd || process.cwd();
-  const absoluteCwd = toAbsolutePath(cwd);
+  const absoluteCwd = isAbsolute(cwd) ? cwd : join(process.cwd(), cwd);
   const withFileTypes = options?.withFileTypes ?? false;
   
   // Find all relevant .gitignore files
   const relevantGitignoreFiles = await findRelevantGitignoreFiles(absoluteCwd);
   
   // Collect all patterns from .gitignore files
-  const allPatterns = await collectGitignorePatterns(relevantGitignoreFiles, absoluteCwd);
+  const allPatterns = await collectGitignorePatterns(
+    relevantGitignoreFiles, 
+    absoluteCwd,
+    options?.additionalGitignoreFiles
+  );
   
   // Preprocess patterns
-  const { earlyExclude, postprocessPatterns } = preprocessPatterns(allPatterns);
+  const { earlyExclude, postprocessPatterns } = preprocessPatterns(allPatterns || []);
   
   // Collect all entries
   const { allPaths, direntMap } = await collectGlobEntries(

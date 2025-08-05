@@ -15,6 +15,11 @@ export interface GlobOptions {
    * Return dirent objects instead of strings
    */
   withFileTypes?: boolean;
+  
+  /**
+   * Additional gitignore files to consider (e.g., global gitignore)
+   */
+  additionalGitignoreFiles?: string[];
 }
 
 /**

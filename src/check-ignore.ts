@@ -4,7 +4,7 @@
  */
 
 import { readFile } from "node:fs/promises";
-import { toAbsolutePath, getRelativePath, getParentDirectory } from "./path-utils.js";
+import { isAbsolute, join, relative, dirname } from "node:path";
 import { findGitignore } from "./gitignore-files.js";
 import { matchesGitignorePattern } from "./postprocess.js";
 
@@ -55,7 +55,7 @@ async function parseGitignoreWithLineNumbers(gitignorePath: string): Promise<Arr
  * Uses matchesGitignorePattern from postprocess.ts for consistency
  */
 function matchesPattern(path: string, pattern: string, basePath: string): boolean {
-  const relativePath = getRelativePath(basePath, path);
+  const relativePath = relative(basePath, path) || ".";
   
   // Remove negation prefix for matching
   const isNegation = pattern.startsWith("!");
@@ -63,6 +63,57 @@ function matchesPattern(path: string, pattern: string, basePath: string): boolea
   
   // Use the shared matching logic
   return matchesGitignorePattern(relativePath, cleanPattern);
+}
+
+/**
+ * Process gitignore patterns and find matches
+ */
+function processGitignoreFile(
+  gitignoreFile: string,
+  absoluteFilePath: string,
+  workingDir: string,
+  patterns: Array<{pattern: string, lineNumber: number}>,
+  ignoredDirs: Map<string, GitignoreReason>,
+  lastMatch: GitignoreReason | null
+): GitignoreReason | null {
+  const gitignoreDir = dirname(gitignoreFile);
+  let match = lastMatch;
+  
+  for (const { pattern, lineNumber } of patterns) {
+    if (matchesPattern(absoluteFilePath, pattern, gitignoreDir)) {
+      const isNegation = pattern.startsWith("!");
+      
+      const reason = {
+        gitignoreFile: relative(workingDir, gitignoreFile) || ".",
+        lineNumber,
+        pattern,
+        filePath: relative(workingDir, absoluteFilePath) || ".",
+        ignored: !isNegation
+      };
+      
+      // Check if the file is in an ignored directory
+      for (const [ignoredDir, dirReason] of ignoredDirs) {
+        if (absoluteFilePath.startsWith(ignoredDir + '/') || dirname(absoluteFilePath) === ignoredDir) {
+          // File is in an ignored directory, return the directory ignore reason
+          return dirReason;
+        }
+      }
+      
+      // If it's a directory pattern that matches a parent of our file, track it
+      if (!isNegation && pattern.endsWith('/')) {
+        const dirPattern = pattern.slice(0, -1);
+        const absoluteDirPattern = join(gitignoreDir, dirPattern);
+        // Check if this pattern matches any parent directory of our file
+        if (absoluteFilePath.startsWith(absoluteDirPattern + '/')) {
+          ignoredDirs.set(absoluteDirPattern, reason);
+        }
+      }
+      
+      match = reason;
+    }
+  }
+  
+  return match;
 }
 
 /**
@@ -75,33 +126,45 @@ function matchesPattern(path: string, pattern: string, basePath: string): boolea
  */
 export async function checkGitignoreReason(filePath: string, cwd?: string): Promise<GitignoreReason | null> {
   const workingDir = cwd || process.cwd();
-  const absoluteFilePath = toAbsolutePath(filePath, workingDir);
+  const absoluteFilePath = isAbsolute(filePath) ? filePath : join(workingDir, filePath);
   
   // Find all .gitignore files from the file's directory up to root
-  const gitignoreFiles = await findGitignore(getParentDirectory(absoluteFilePath));
+  const gitignoreFiles = await findGitignore(dirname(absoluteFilePath));
   
   let lastMatch: GitignoreReason | null = null;
   
+  // Track which directories are ignored and their patterns
+  const ignoredDirs = new Map<string, GitignoreReason>();
+  
   // Process gitignore files from root to leaf (reverse order)
   for (const gitignoreFile of gitignoreFiles.reverse()) {
-    const patterns = await parseGitignoreWithLineNumbers(gitignoreFile);
-    const gitignoreDir = getParentDirectory(gitignoreFile);
+    const gitignoreDir = dirname(gitignoreFile);
     
-    for (const { pattern, lineNumber } of patterns) {
-      if (matchesPattern(absoluteFilePath, pattern, gitignoreDir)) {
-        const isNegation = pattern.startsWith("!");
-        
-        lastMatch = {
-          gitignoreFile: getRelativePath(workingDir, gitignoreFile),
-          lineNumber,
-          pattern,
-          filePath: getRelativePath(workingDir, absoluteFilePath),
-          ignored: !isNegation
-        };
-        
-        // For negation patterns, we need to continue checking
-        // For normal patterns, we can update but continue to find the most specific match
+    // Skip .gitignore files in ignored directories (Git behavior)
+    let skipThisGitignore = false;
+    for (const [ignoredDir] of ignoredDirs) {
+      if (gitignoreDir.startsWith(ignoredDir + '/') || gitignoreDir === ignoredDir) {
+        skipThisGitignore = true;
+        break;
       }
+    }
+    
+    if (skipThisGitignore) {
+      continue;
+    }
+    
+    const patterns = await parseGitignoreWithLineNumbers(gitignoreFile);
+    const match = processGitignoreFile(
+      gitignoreFile,
+      absoluteFilePath,
+      workingDir,
+      patterns,
+      ignoredDirs,
+      lastMatch
+    );
+    
+    if (match) {
+      lastMatch = match;
     }
   }
   

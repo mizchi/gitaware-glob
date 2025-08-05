@@ -6,3 +6,6 @@ export { findGitignore, parseGitignoreToExclude } from "./gitignore-files.js";
 
 // Re-export glob function
 export { glob } from "./glob.js";
+
+// Re-export walk function
+export { walk } from "./walk.js";

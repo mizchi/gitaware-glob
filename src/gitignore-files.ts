@@ -2,7 +2,7 @@
  * Functions for finding and processing gitignore files
  */
 import { readFile, access } from "node:fs/promises";
-import { toAbsolutePath, getRelativePath, getParentDirectory, joinPath } from "./path-utils.js";
+import { isAbsolute, join, relative, dirname } from "node:path";
 import { findGitignoreRecursive } from "./find-gitignore-recursive.js";
 import { gitignoreToGlob } from "./gitignore-to-glob.js";
 
@@ -11,10 +11,10 @@ import { gitignoreToGlob } from "./gitignore-to-glob.js";
  */
 export async function findGitignore(startPath: string): Promise<string[]> {
   const gitignoreFiles: string[] = [];
-  let currentPath = toAbsolutePath(startPath);
+  let currentPath = isAbsolute(startPath) ? startPath : join(process.cwd(), startPath);
   
   while (true) {
-    const gitignorePath = joinPath(currentPath, ".gitignore");
+    const gitignorePath = join(currentPath, ".gitignore");
     
     try {
       await access(gitignorePath);
@@ -23,7 +23,7 @@ export async function findGitignore(startPath: string): Promise<string[]> {
       // .gitignore doesn't exist in this directory
     }
     
-    const parentPath = getParentDirectory(currentPath);
+    const parentPath = dirname(currentPath);
     if (parentPath === currentPath) {
       // Reached root
       break;
@@ -132,14 +132,24 @@ export async function findRelevantGitignoreFiles(absoluteCwd: string): Promise<s
  */
 export async function collectGitignorePatterns(
   relevantGitignoreFiles: string[], 
-  absoluteCwd: string
+  absoluteCwd: string,
+  additionalGitignoreFiles?: string[]
 ): Promise<string[]> {
   const allPatterns: string[] = [];
   
+  // Process additional gitignore files first (lower priority)
+  if (additionalGitignoreFiles) {
+    for (const gitignorePath of additionalGitignoreFiles) {
+      const patterns = await parseGitignoreToExclude(gitignorePath);
+      allPatterns.push(...patterns);
+    }
+  }
+  
+  // Process project gitignore files (higher priority)
   for (const gitignorePath of relevantGitignoreFiles) {
     // Adjust patterns based on the relative path from cwd to gitignore location
-    const gitignoreDir = getParentDirectory(gitignorePath);
-    const relPath = getRelativePath(absoluteCwd, gitignoreDir);
+    const gitignoreDir = dirname(gitignorePath);
+    const relPath = relative(absoluteCwd, gitignoreDir) || ".";
     
     // For subdirectory .gitignore files, pass the relative path to parseGitignoreToExclude
     const baseDir = (relPath && relPath !== ".") ? relPath : undefined;

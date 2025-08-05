@@ -1,33 +1,34 @@
-# Known Issues
+# Known Issues - RESOLVED
 
-These test cases represent edge cases where our implementation differs from git's behavior:
+**Update**: As of the latest version, our implementation now correctly matches Git's behavior for ignored directories.
 
-## 1. Nested Directory Negation
+## Previous Issues (Now Fixed)
+
+### 1. Nested Directory Negation
 
 **Pattern**: 
 - Parent: `debug/` (ignores entire directory)
 - Child: `!trace.log` (in debug/.gitignore)
 
-**Expected**: `logs/debug/trace.log` should NOT be ignored
-**Actual**: File is ignored because parent directory is excluded
+**Git Behavior**: Git does NOT process .gitignore files within ignored directories. Files in ignored directories remain ignored regardless of negation patterns in child .gitignore files.
 
-**Git Behavior**: Git processes child .gitignore files even in ignored directories
+**Status**: ✅ Fixed - Our implementation now matches Git's behavior
 
-## 2. Wildcard Negation in Ignored Directories
+### 2. Wildcard Negation in Ignored Directories
 
 **Pattern**:
 - `images/` (ignores directory)
 - `!images/*.png` (negates .png files)
 
-**Expected**: PNG files in images/ should be included
-**Actual**: All files in images/ are ignored
+**Git Behavior**: Negation patterns cannot "rescue" files from ignored directories. Once a directory is ignored, all files within it are ignored.
 
-**Note**: This is a complex interaction between directory exclusion and wildcard negation patterns.
+**Status**: ✅ Fixed - Our implementation now matches Git's behavior
 
-## Workaround
+## Git Specification
 
-For now, avoid using:
-- Negation patterns in .gitignore files within ignored directories
-- Wildcard negations for files in ignored directories
+According to Git's design:
+- When a directory is ignored (e.g., `build/`), Git does not descend into that directory
+- Negation patterns (e.g., `!build/keep/`) cannot rescue files from ignored directories
+- .gitignore files within ignored directories are not processed
 
-Instead, use more specific patterns or restructure your .gitignore rules.
+This is intentional behavior in Git for performance reasons - avoiding traversal of ignored directory trees.

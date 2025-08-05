@@ -71,13 +71,13 @@ describe("fixtures regression tests", () => {
         },
         {
           file: "src/build/keep/bundle.js",
-          expectedPattern: "!build/keep/",
-          expectedIgnored: false
+          expectedPattern: "build/",
+          expectedIgnored: true
         },
         {
           file: "docs/images/screenshot.png",
-          expectedPattern: "!images/*.png",
-          expectedIgnored: false
+          expectedPattern: "images/",
+          expectedIgnored: true
         }
       ];
       
