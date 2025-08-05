@@ -1,17 +1,17 @@
-# gitignore-glob
+# gitaware-glob
 
 A glob implementation that respects .gitignore files, providing a drop-in replacement for node:fs/promises glob API.
 
 ## Installation
 
 ```bash
-pnpm add gitignore-glob
+pnpm add gitaware-glob
 ```
 
 ## Usage
 
 ```typescript
-import { glob, walk, findGitignore, parseGitignoreToExclude } from 'gitignore-glob';
+import { glob, walk, findGitignore, parseGitignoreToExclude } from 'gitaware-glob';
 
 // Same API as node:fs/promises glob, but automatically respects .gitignore
 const files = await glob('**/*.ts');

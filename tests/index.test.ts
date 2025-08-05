@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { glob, findGitignore, parseGitignoreToExclude } from "../src/index.js";
 
-describe("gitignore-glob", () => {
+describe("gitaware-glob", () => {
   it("should find files with glob pattern", async () => {
     const files = await Array.fromAsync(glob("**/*.ts"));
     expect(Array.isArray(files)).toBe(true);
