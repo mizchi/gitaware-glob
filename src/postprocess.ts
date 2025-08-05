@@ -24,11 +24,9 @@ export function shouldExclude(filePath: string, patterns: string[]): boolean {
       if (matchesGitignorePattern(filePath, negPattern)) {
         excluded = false;
       }
-    } else {
+    } else if (matchesGitignorePattern(filePath, pattern)) {
       // Exclusion pattern
-      if (matchesGitignorePattern(filePath, pattern)) {
-        excluded = true;
-      }
+      excluded = true;
     }
   }
   

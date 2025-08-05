@@ -10,6 +10,11 @@ export interface GlobOptions {
    * The current working directory
    */
   cwd?: string;
+  
+  /**
+   * Return dirent objects instead of strings
+   */
+  withFileTypes?: boolean;
 }
 
 /**
@@ -30,7 +35,7 @@ export interface OptimizedPatterns {
 /**
  * Pattern type for gitignore
  */
-export type GitignorePattern = {
+export interface GitignorePattern {
   /**
    * The original pattern string
    */
@@ -50,4 +55,34 @@ export type GitignorePattern = {
    * Whether this pattern is root-relative (starts with /)
    */
   isRootRelative: boolean;
-};
+}
+
+/**
+ * Parsed gitignore file
+ */
+export interface ParsedGitignore {
+  /**
+   * Path to the gitignore file
+   */
+  filePath: string;
+  
+  /**
+   * Parsed patterns from the file
+   */
+  patterns: GitignorePattern[];
+}
+
+/**
+ * Result of gitignore processing
+ */
+export interface GitignoreProcessingResult {
+  /**
+   * Files to exclude
+   */
+  excludePatterns: string[];
+  
+  /**
+   * Negation patterns to apply
+   */
+  negationPatterns: string[];
+}

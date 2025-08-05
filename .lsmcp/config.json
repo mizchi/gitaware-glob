@@ -19,42 +19,101 @@
     "**/.git/**"
   ],
   "adapter": {
-    "id": "tsgo",
-    "name": "tsgo",
+    "id": "typescript",
+    "name": "TypeScript Language Server",
     "baseLanguage": "typescript",
-    "description": "Fast TypeScript language server by tsgo",
-    "bin": "tsgo",
+    "description": "Community TypeScript Language Server",
+    "bin": "typescript-language-server",
     "args": [
-      "--lsp",
       "--stdio"
     ],
-    "unsupported": [
-      "get_document_symbols",
-      "get_workspace_symbols",
-      "get_code_actions",
-      "rename_symbol",
-      "delete_symbol"
-    ],
-    "needsDiagnosticDeduplication": true,
-    "serverCharacteristics": {
-      "documentOpenDelay": 500,
-      "readinessCheckTimeout": 200,
-      "initialDiagnosticsTimeout": 1000,
-      "requiresProjectInit": false,
-      "sendsInitialDiagnostics": false,
-      "operationTimeout": 5000
-    },
     "initializationOptions": {
       "preferences": {
-        "includeInlayParameterNameHints": "none",
-        "includeInlayParameterNameHintsWhenArgumentMatchesName": false,
-        "includeInlayFunctionParameterTypeHints": false,
-        "includeInlayVariableTypeHints": false,
-        "includeInlayPropertyDeclarationTypeHints": false,
-        "includeInlayFunctionLikeReturnTypeHints": false,
-        "includeInlayEnumMemberValueHints": false
+        "includeCompletionsForModuleExports": true,
+        "includeCompletionsWithInsertText": true
+      }
+    },
+    "customTools": [
+      {
+        "name": "extract_type",
+        "description": "Extract selected type expression into a type alias or interface (TypeScript only)",
+        "schema": {
+          "_def": {
+            "unknownKeys": "strip",
+            "catchall": {
+              "_def": {
+                "typeName": "ZodNever"
+              },
+              "~standard": {
+                "version": 1,
+                "vendor": "zod"
+              }
+            },
+            "typeName": "ZodObject"
+          },
+          "~standard": {
+            "version": 1,
+            "vendor": "zod"
+          },
+          "_cached": null
+        }
       },
-      "maxTsServerMemory": 4096
+      {
+        "name": "generate_accessors",
+        "description": "Generate get/set accessor methods for a class property (TypeScript only)",
+        "schema": {
+          "_def": {
+            "unknownKeys": "strip",
+            "catchall": {
+              "_def": {
+                "typeName": "ZodNever"
+              },
+              "~standard": {
+                "version": 1,
+                "vendor": "zod"
+              }
+            },
+            "typeName": "ZodObject"
+          },
+          "~standard": {
+            "version": 1,
+            "vendor": "zod"
+          },
+          "_cached": null
+        }
+      },
+      {
+        "name": "call_hierarchy",
+        "description": "Get call hierarchy (incoming/outgoing calls) for a function or method (TypeScript only)",
+        "schema": {
+          "_def": {
+            "unknownKeys": "strip",
+            "catchall": {
+              "_def": {
+                "typeName": "ZodNever"
+              },
+              "~standard": {
+                "version": 1,
+                "vendor": "zod"
+              }
+            },
+            "typeName": "ZodObject"
+          },
+          "~standard": {
+            "version": 1,
+            "vendor": "zod"
+          },
+          "_cached": null
+        }
+      }
+    ],
+    "serverCharacteristics": {
+      "documentOpenDelay": 2000,
+      "readinessCheckTimeout": 1000,
+      "initialDiagnosticsTimeout": 3000,
+      "requiresProjectInit": true,
+      "sendsInitialDiagnostics": true,
+      "operationTimeout": 15000
     }
   }
 }

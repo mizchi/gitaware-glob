@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { glob } from "../src/index.js";
+import { glob } from "./test-utils.js";
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 

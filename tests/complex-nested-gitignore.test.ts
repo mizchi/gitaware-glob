@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
-import { glob } from "../src/index.js";
+import { glob } from "./test-utils.js";
 import { checkGitignoreReason, formatGitignoreReason } from "../src/check-ignore.js";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -145,11 +145,11 @@ images/
   describe("debug gitignore loading", () => {
     it("should load all gitignore files", async () => {
       // Import internal functions for debugging
-      const { findGitignore } = await import("../src/index.js");
+      // const { findGitignore } = await import("../src/index.js");
       const { findGitignoreRecursive } = await import("../src/find-gitignore-recursive.js");
       
       const gitignoreFiles = await findGitignoreRecursive(testDir);
-      console.log("Found gitignore files:", gitignoreFiles.map(f => f.replace(testDir, ".")));
+      // console.log("Found gitignore files:", gitignoreFiles.map(f => f.replace(testDir, ".")));
       
       // Should find all .gitignore files
       expect(gitignoreFiles.length).toBeGreaterThan(5);
@@ -160,8 +160,8 @@ images/
     it("should handle root-level negations", async () => {
       const files = await glob("**/*", { cwd: testDir });
       
-      console.log("Total files found:", files.length);
-      console.log("Files in logs/:", files.filter(f => f.startsWith("logs/")).sort());
+      // console.log("Total files found:", files.length);
+      // console.log("Files in logs/:", files.filter(f => f.startsWith("logs/")).sort());
       
       // Root .gitignore patterns
       expect(files).not.toContain("logs/app.log"); // *.log

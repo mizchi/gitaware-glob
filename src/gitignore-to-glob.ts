@@ -99,24 +99,22 @@ function handleRegularPattern(pattern: string, isNegation: boolean, baseDir?: st
         results.push(prefix + '**/' + pattern);
       }
     }
+  } else if (baseDir) {
+    // Simple pattern (file or wildcard) with baseDir
+    results.push(prefix + baseDir + '/' + pattern);
+    results.push(prefix + baseDir + '/**/' + pattern);
+    
+    // If it looks like a directory name
+    if (!pattern.includes('.') && !pattern.includes('*') && !pattern.includes('?') && !pattern.includes('[')) {
+      results.push(prefix + baseDir + '/' + pattern + '/**');
+      results.push(prefix + baseDir + '/**/' + pattern + '/**');
+    }
   } else {
-    // Simple pattern (file or wildcard)
-    if (baseDir) {
-      results.push(prefix + baseDir + '/' + pattern);
-      results.push(prefix + baseDir + '/**/' + pattern);
-      
-      // If it looks like a directory name
-      if (!pattern.includes('.') && !pattern.includes('*') && !pattern.includes('?') && !pattern.includes('[')) {
-        results.push(prefix + baseDir + '/' + pattern + '/**');
-        results.push(prefix + baseDir + '/**/' + pattern + '/**');
-      }
-    } else {
-      results.push(prefix + '**/' + pattern);
-      
-      // If it looks like a directory name
-      if (!pattern.includes('.') && !pattern.includes('*') && !pattern.includes('?') && !pattern.includes('[')) {
-        results.push(prefix + '**/' + pattern + '/**');
-      }
+    results.push(prefix + '**/' + pattern);
+    
+    // If it looks like a directory name
+    if (!pattern.includes('.') && !pattern.includes('*') && !pattern.includes('?') && !pattern.includes('[')) {
+      results.push(prefix + '**/' + pattern + '/**');
     }
   }
   

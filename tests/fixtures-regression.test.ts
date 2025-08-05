@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { join } from "node:path";
-import { glob } from "../src/index.js";
+import { glob } from "./test-utils.js";
 import { checkGitignoreReason } from "../src/check-ignore.js";
 
 describe("fixtures regression tests", () => {
@@ -87,12 +87,10 @@ describe("fixtures regression tests", () => {
           expect(reason).toBeTruthy();
           expect(reason?.pattern).toBe(expectedPattern);
           expect(reason?.ignored).toBe(true);
-        } else {
+        } else if (reason) {
           // For negated patterns, the reason might still exist but with ignored: false
-          if (reason) {
-            expect(reason.pattern).toBe(expectedPattern);
-            expect(reason.ignored).toBe(false);
-          }
+          expect(reason.pattern).toBe(expectedPattern);
+          expect(reason.ignored).toBe(false);
         }
       }
     });

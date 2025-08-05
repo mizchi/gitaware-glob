@@ -1,5 +1,5 @@
 import { readdir } from "node:fs/promises";
-import { join } from "node:path";
+import { joinPath } from "./path-utils.js";
 
 /**
  * Recursively find all .gitignore files in a directory tree
@@ -12,7 +12,7 @@ export async function findGitignoreRecursive(dir: string): Promise<string[]> {
       const entries = await readdir(currentDir, { withFileTypes: true });
       
       for (const entry of entries) {
-        const fullPath = join(currentDir, entry.name);
+        const fullPath = joinPath(currentDir, entry.name);
         
         if (entry.isDirectory()) {
           // Skip node_modules and .git directories
