@@ -1,8 +1,7 @@
 /**
  * Test utilities for converting async generator to array
  */
-import { glob as globGenerator } from "../src/index.js";
-import { GlobOptions } from "../src/types.js";
+import { glob as globGenerator, type GlobOptions } from "../src/index.js";
 
 /**
  * Helper function to convert glob async generator to array

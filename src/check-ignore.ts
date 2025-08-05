@@ -3,33 +3,21 @@
  * Similar to git check-ignore -v functionality
  */
 
-import { readFile } from "node:fs/promises";
+import { promises as fs } from "node:fs";
 import { isAbsolute, join, relative, dirname } from "node:path";
-import { findGitignore } from "./gitignore-files.js";
-import { matchesGitignorePattern } from "./postprocess.js";
-
-/**
- * Reason for gitignore match
- */
-export interface GitignoreReason {
-  /** Path to the .gitignore file */
-  gitignoreFile: string;
-  /** Line number in the .gitignore file (1-based) */
-  lineNumber: number;
-  /** The pattern that matched */
-  pattern: string;
-  /** The file path that was checked */
-  filePath: string;
-  /** Whether the file is ignored (false if negated) */
-  ignored: boolean;
-}
+import { findGitignoreInternal } from "./gitignore.js";
+import { matchesGitignorePattern } from "./core/postprocess.js";
+import type { FileSystemInterface, GlobOptions, InternalOptions, GitignoreReason } from "./types.js";
 
 /**
  * Parse a .gitignore file and return patterns with line numbers
  */
-async function parseGitignoreWithLineNumbers(gitignorePath: string): Promise<Array<{pattern: string, lineNumber: number}>> {
+async function parseGitignoreWithLineNumbers(
+  gitignorePath: string,
+  fileSystem: FileSystemInterface
+): Promise<Array<{pattern: string, lineNumber: number}>> {
   try {
-    const content = await readFile(gitignorePath, "utf-8");
+    const content = await fileSystem.readFile(gitignorePath, "utf-8");
     const lines = content.split("\n");
     const patterns: Array<{pattern: string, lineNumber: number}> = [];
     
@@ -117,19 +105,17 @@ function processGitignoreFile(
 }
 
 /**
- * Check which gitignore pattern matches a file and why
- * Similar to `git check-ignore -v`
- * 
- * @param filePath The file path to check
- * @param cwd Current working directory
- * @returns The reason for ignore, or null if not ignored
+ * Internal function with resolved options
  */
-export async function checkGitignoreReason(filePath: string, cwd?: string): Promise<GitignoreReason | null> {
-  const workingDir = cwd || process.cwd();
+async function checkGitignoreReasonInternal(
+  filePath: string,
+  options: InternalOptions
+): Promise<GitignoreReason | null> {
+  const { fs: fileSystem, cwd: workingDir } = options;
   const absoluteFilePath = isAbsolute(filePath) ? filePath : join(workingDir, filePath);
   
   // Find all .gitignore files from the file's directory up to root
-  const gitignoreFiles = await findGitignore(dirname(absoluteFilePath));
+  const gitignoreFiles = await findGitignoreInternal(dirname(absoluteFilePath), options);
   
   let lastMatch: GitignoreReason | null = null;
   
@@ -153,7 +139,7 @@ export async function checkGitignoreReason(filePath: string, cwd?: string): Prom
       continue;
     }
     
-    const patterns = await parseGitignoreWithLineNumbers(gitignoreFile);
+    const patterns = await parseGitignoreWithLineNumbers(gitignoreFile, fileSystem);
     const match = processGitignoreFile(
       gitignoreFile,
       absoluteFilePath,
@@ -170,6 +156,31 @@ export async function checkGitignoreReason(filePath: string, cwd?: string): Prom
   
   // Return the last match, which represents the final decision
   return lastMatch && lastMatch.ignored ? lastMatch : lastMatch;
+}
+
+/**
+ * Check which gitignore pattern matches a file and why
+ * Similar to `git check-ignore -v`
+ * 
+ * @param filePath The file path to check
+ * @param cwdOrOptions Current working directory (string) or options object
+ * @returns The reason for ignore, or null if not ignored
+ */
+export function checkGitignoreReason(
+  filePath: string, 
+  cwdOrOptions?: string | GlobOptions
+): Promise<GitignoreReason | null> {
+  const options = typeof cwdOrOptions === 'string' ? { cwd: cwdOrOptions } : cwdOrOptions;
+  const workingDir = options?.cwd || process.cwd();
+  const fileSystem = options?.fs || fs;
+  
+  const internalOptions: InternalOptions = {
+    fs: fileSystem,
+    cwd: isAbsolute(workingDir) ? workingDir : join(process.cwd(), workingDir),
+    additionalGitignoreFiles: options?.additionalGitignoreFiles
+  };
+  
+  return checkGitignoreReasonInternal(filePath, internalOptions);
 }
 
 /**

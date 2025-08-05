@@ -1,12 +1,16 @@
 {
   "name": "gitaware-glob",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A glob implementation that respects .gitignore files",
   "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
     }
   },
   "scripts": {
@@ -24,6 +28,7 @@
     "@typescript/native-preview": "7.0.0-dev.20250804.1",
     "@vitest/coverage-v8": "^3.2.4",
     "knip": "^5.62.0",
+    "memfs": "^4.15.0",
     "oxlint": "^1.9.0",
     "rolldown-plugin-dts": "^0.14.1",
     "tsdown": "^0.13.0",
