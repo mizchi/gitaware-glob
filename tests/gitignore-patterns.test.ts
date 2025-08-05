@@ -1,13 +1,18 @@
-import { describe, it, expect, afterAll } from "vitest";
+import { describe, it, expect, afterEach, beforeEach } from "vitest";
 import { parseGitignoreToExclude } from "../src/index.js";
-import { writeFile, rm } from "node:fs/promises";
+import { writeFile, rm, mkdir } from "node:fs/promises";
 import { join } from "node:path";
 
 describe("gitignore pattern parsing", () => {
-  const testFile = join(process.cwd(), "test-gitignore");
+  const testDir = join(process.cwd(), "test-gitignore-temp");
+  const testFile = join(testDir, ".gitignore");
   
-  afterAll(async () => {
-    await rm(testFile, { force: true });
+  beforeEach(async () => {
+    await mkdir(testDir, { recursive: true });
+  });
+  
+  afterEach(async () => {
+    await rm(testDir, { recursive: true, force: true });
   });
   
   it("should parse basic patterns", async () => {
@@ -126,5 +131,49 @@ package-lock.json
     expect(patterns).toContain("**/package-lock.json");
     expect(patterns).toContain("**/*.{log,tmp}");
     expect(patterns).toContain("**/{build,dist}/**");
+  });
+  
+  it("should handle root-relative patterns", async () => {
+    await writeFile(testFile, `/node_modules
+/dist/
+/.env
+/src/generated/`);
+    
+    const patterns = await parseGitignoreToExclude(testFile);
+    
+    expect(patterns).toContain("node_modules");
+    expect(patterns).toContain("node_modules/**");
+    expect(patterns).toContain("dist/**");
+    expect(patterns).toContain(".env");
+    expect(patterns).toContain("src/generated/**");
+  });
+  
+  it("should handle mixed patterns with subdirectories", async () => {
+    await writeFile(testFile, `# Root patterns
+/config.local.js
+/.env.local
+
+# Subdirectory patterns
+src/temp/
+tests/**/*.tmp
+
+# Extension patterns
+*.log
+*.cache
+
+# Negations
+!important.log
+!tests/fixtures/**`);
+    
+    const patterns = await parseGitignoreToExclude(testFile);
+    
+    expect(patterns).toContain("config.local.js");
+    expect(patterns).toContain(".env.local");
+    expect(patterns).toContain("**/src/temp/**");
+    expect(patterns).toContain("tests/**/*.tmp");
+    expect(patterns).toContain("**/*.log");
+    expect(patterns).toContain("**/*.cache");
+    expect(patterns).toContain("!**/important.log");
+    expect(patterns).toContain("!tests/fixtures/**");
   });
 });

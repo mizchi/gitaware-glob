@@ -6,3 +6,4 @@ tmp
 .lsmcp/cache
 # Test fixtures
 tests/fixtures/**/*.js
+test-gitignore-temp

@@ -154,10 +154,20 @@ export function gitignoreToGlob(pattern: string, baseDir?: string): string[] {
   if (pattern.startsWith('/')) {
     // Root-relative pattern (relative to .gitignore location)
     const path = pattern.substring(1);
+    
+    // Check if it's a directory pattern (no extension or common directory names)
+    const isDirectory = !path.includes('.') || path.endsWith('modules') || path.endsWith('dist');
+    
     if (baseDir) {
       results.push((isNegation ? '!' : '') + baseDir + '/' + path);
+      if (isDirectory) {
+        results.push((isNegation ? '!' : '') + baseDir + '/' + path + '/**');
+      }
     } else {
       results.push((isNegation ? '!' : '') + path);
+      if (isDirectory) {
+        results.push((isNegation ? '!' : '') + path + '/**');
+      }
     }
     return results;
   }

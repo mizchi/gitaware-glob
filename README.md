@@ -5,7 +5,7 @@ A glob implementation that respects .gitignore files, providing a drop-in replac
 ## Installation
 
 ```bash
-pnpm add gitaware-glob
+npm add gitaware-glob
 ```
 
 ## Usage
@@ -57,21 +57,22 @@ const excludePatterns = await parseGitignoreToExclude("/path/to/.gitignore");
 This library supports using [memfs](https://github.com/streamich/memfs) as a custom file system:
 
 ```typescript
-import { Volume } from 'memfs';
-import { readdir, walk, glob } from 'gitaware-glob';
-
+import { Volume } from "memfs";
+import { glob, type FileSystemInterface } from "gitaware-glob";
+// Create an in-memory file system
 const vol = new Volume();
-vol.mkdirSync('/project/src', { recursive: true });
-vol.writeFileSync('/project/src/index.js', 'console.log("hello");');
-vol.writeFileSync('/project/.gitignore', 'node_modules/\n*.log');
+// Set up a project structure
+vol.mkdirSync("/project/src", { recursive: true });
+vol.writeFileSync("/project/src/index.js", 'console.log("hello");');
 
-// Use vol.promises directly with the fs option - no type casting needed!
-const fs = vol.promises;
-
-// All functions work with memfs
-const files = await readdir('/project', { fs });
-const allFiles = await Array.fromAsync(walk({ cwd: '/project', fs }));
-const jsFiles = await Array.fromAsync(glob('**/*.js', { cwd: '/project', fs }));
+// Use with gitaware-glob (cast to FileSystemInterface for type safety)
+const files = await Array.fromAsync(
+  glob("**/*.js", {
+    cwd: "/project",
+    fs: vol.promises as FileSystemInterface,
+  })
+);
+console.log(files);
 ```
 
 ## API
@@ -82,16 +83,16 @@ Read directory contents with automatic .gitignore support.
 
 ```typescript
 // Read files in current directory
-const files = await readdir('.');
+const files = await readdir(".");
 
 // Get Dirent objects
-const entries = await readdir('.', { withFileTypes: true });
+const entries = await readdir(".", { withFileTypes: true });
 
 // Read recursively
-const allFiles = await readdir('.', { recursive: true });
+const allFiles = await readdir(".", { recursive: true });
 
 // With custom file system
-const files = await readdir('/path', { fs: customFs });
+const files = await readdir("/path", { fs: customFs });
 ```
 
 ## Build and Test

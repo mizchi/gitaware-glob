@@ -236,14 +236,14 @@ images/
       ];
       
       // These should be ignored despite negation patterns (Git behavior)
-      const ignoredDespiteNegation = [
-        "logs/debug/trace.log", // In ignored directory
-        "src/build/keep/bundle.js", // In ignored directory
-        "src/build/keep/app.min.js", // In ignored directory
-        "src/test/integration.spec.js", // In ignored directory
-        "src/test/fixtures/important/config.json", // In ignored directory
-        "docs/images/screenshot.png" // In ignored directory
-      ];
+      // const ignoredDespiteNegation = [
+      //   "logs/debug/trace.log", // In ignored directory
+      //   "src/build/keep/bundle.js", // In ignored directory
+      //   "src/build/keep/app.min.js", // In ignored directory
+      //   "src/test/integration.spec.js", // In ignored directory
+      //   "src/test/fixtures/important/config.json", // In ignored directory
+      //   "docs/images/screenshot.png" // In ignored directory
+      // ];
       
       for (const file of expectedFiles) {
         expect(files).toContain(file);
