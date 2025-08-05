@@ -1,9 +1,20 @@
 import { describe, it, expect } from "vitest";
-// Should rename this to match your package name
-import { add } from "@your/pkgname"; // Importing from the package
+import { glob, findGitignore, parseGitignoreToExclude } from "../src/index.js";
 
-describe("add function", () => {
-  it("should return the sum of two numbers", () => {
-    expect(add(2, 3)).toBe(5);
+describe("gitignore-glob", () => {
+  it("should find files with glob pattern", async () => {
+    const files = await glob("**/*.ts");
+    expect(Array.isArray(files)).toBe(true);
+    expect(files.length).toBeGreaterThan(0);
+  });
+
+  it("should find gitignore files", async () => {
+    const gitignoreFiles = await findGitignore(process.cwd());
+    expect(Array.isArray(gitignoreFiles)).toBe(true);
+  });
+
+  it("should parse gitignore to exclude patterns", async () => {
+    const excludePatterns = await parseGitignoreToExclude(".gitignore");
+    expect(Array.isArray(excludePatterns)).toBe(true);
   });
 });

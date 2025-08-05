@@ -1,12 +1,19 @@
-// Basic usage of the add function
-import { add } from "@your/pkgname";
+import { glob, findGitignore, parseGitignoreToExclude } from "@mizchi/gitaware-glob";
 
-// Add two numbers together
-const result = add(2, 3);
-console.log(result); // 5
+// Find all TypeScript files, respecting .gitignore
+const tsFiles = await glob('**/*.ts');
+console.log('TypeScript files:', tsFiles);
 
-// Works with negative numbers
-console.log(add(-10, 5)); // -5
+// Find JavaScript files in src directory
+const jsFiles = await glob('src/**/*.js', { cwd: process.cwd() });
+console.log('JavaScript files:', jsFiles);
 
-// Works with decimal numbers
-console.log(add(1.5, 2.5)); // 4
+// Find all .gitignore files up to the root
+const gitignoreFiles = await findGitignore(process.cwd());
+console.log('Found .gitignore files:', gitignoreFiles);
+
+// Parse a .gitignore file
+if (gitignoreFiles.length > 0) {
+  const excludePatterns = await parseGitignoreToExclude(gitignoreFiles[0]);
+  console.log('Exclude patterns:', excludePatterns);
+}
