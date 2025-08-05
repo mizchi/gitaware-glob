@@ -1,0 +1,4 @@
+# Logs directory
+*.tmp
+!critical.tmp
+debug/

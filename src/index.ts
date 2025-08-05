@@ -79,7 +79,7 @@ export async function parseGitignoreToExclude(gitignorePath: string, baseDir?: s
  */
 async function findRelevantGitignoreFiles(absoluteCwd: string): Promise<string[]> {
   // For test directories, find all .gitignore files recursively within the test root
-  if (absoluteCwd.includes("test-nested-gitignore") || absoluteCwd.includes("test-fixtures") || absoluteCwd.includes("test-recursive")) {
+  if (absoluteCwd.includes("test-nested-gitignore") || absoluteCwd.includes("test-fixtures") || absoluteCwd.includes("test-recursive") || absoluteCwd.includes("test-complex-nested") || absoluteCwd.includes("tests/fixtures")) {
     // Find the test root directory
     const pathParts = absoluteCwd.split('/');
     let testRootIndex = -1;

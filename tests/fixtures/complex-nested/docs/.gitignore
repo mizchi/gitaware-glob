@@ -1,0 +1,5 @@
+# Documentation
+*.pdf
+!manual.pdf
+images/
+!images/*.png

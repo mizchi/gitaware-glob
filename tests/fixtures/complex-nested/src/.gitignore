@@ -1,0 +1,4 @@
+# Source directory
+build/
+!build/keep/
+test/

@@ -4,3 +4,5 @@ coverage
 tmp
 # lsmcp cache
 .lsmcp/cache
+# Test fixtures
+tests/fixtures/**/*.js
