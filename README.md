@@ -11,11 +11,16 @@ pnpm add gitaware-glob
 ## Usage
 
 ```typescript
-import { glob, walk, findGitignore, parseGitignoreToExclude } from 'gitaware-glob';
+import {
+  glob,
+  walk,
+  findGitignore,
+  parseGitignoreToExclude,
+} from "gitaware-glob";
 
 // Same API as node:fs/promises glob, but automatically respects .gitignore
-const files = await glob('**/*.ts');
-const jsFiles = await glob('src/**/*.js', { cwd: '/path/to/project' });
+const files = await glob("**/*.ts");
+const jsFiles = await glob("src/**/*.js", { cwd: "/path/to/project" });
 
 // Walk directory tree without glob pattern, respecting .gitignore
 for await (const file of walk()) {
@@ -32,16 +37,18 @@ for await (const entry of walk({ withFileTypes: true })) {
 }
 
 // Support for additional gitignore files (e.g., global gitignore)
-const files = await Array.fromAsync(glob('**/*.js', {
-  additionalGitignoreFiles: ['/home/user/.gitignore_global']
-}));
+const files = await Array.fromAsync(
+  glob("**/*.js", {
+    additionalGitignoreFiles: ["/home/user/.gitignore_global"],
+  })
+);
 
 // Find all .gitignore files recursively up to the root
-const gitignoreFiles = await findGitignore('/path/to/project');
+const gitignoreFiles = await findGitignore("/path/to/project");
 // => ['/path/to/project/.gitignore', '/path/to/.gitignore']
 
 // Parse .gitignore file and generate exclude patterns
-const excludePatterns = await parseGitignoreToExclude('/path/to/.gitignore');
+const excludePatterns = await parseGitignoreToExclude("/path/to/.gitignore");
 // => ['node_modules/**', '*.log', '!important.log']
 ```
 
@@ -52,6 +59,11 @@ pnpm install
 pnpm test
 pnpm build
 ```
+
+## Prior Art
+
+- https://www.npmjs.com/package/glob-gitignore
+- https://crates.io/crates/gitignore
 
 ## License
 
